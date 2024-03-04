@@ -24,6 +24,7 @@ app.use(bodyParser.json());
 // const url = 'mongodb://localhost:27017/conFusion';
 const url = config.mongoUrl;
 const connect = mongoose.connect(url);
+const uploadRouter = require('./routes/uploadRouter');
 
 connect.then((db) => {
     console.log("Connected correctly to server");
@@ -39,6 +40,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
+app.use('/imageUpload',uploadRouter);
 
 
 
@@ -164,6 +166,18 @@ function auth (req, res, next){
   }
   }
   app.use(auth);
+
+// Secure traffic only
+app.all('*', (req, res, next) => {
+  if (req.secure) {
+  return next();
+  }
+  else {
+  res.redirect(307, 'https://' + req.hostname + ':' + app.get('secPort') + req.url);
+  }
+  });
+  
+
 
 
 app.use('/', indexRouter);
